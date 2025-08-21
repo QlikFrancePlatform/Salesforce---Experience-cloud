@@ -1,5 +1,7 @@
 # Qlik Embed Salesforce Experience Cloud
 
+[🇬🇧 English version available here](README_EN.md)
+
 Ce projet permet d'intégrer des composants Qlik Cloud dans Salesforce Experience Cloud en utilisant des composants Lightning Web Components (LWC) et des pages Visualforce.
 
 ## 🎯 Vue d'ensemble
