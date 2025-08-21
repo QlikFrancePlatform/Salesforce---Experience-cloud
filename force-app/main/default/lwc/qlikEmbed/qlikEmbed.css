@@ -1,0 +1,54 @@
+
+.qlik-container {
+    height: 400px;
+    min-height: 400px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fafafa;
+    position: relative;
+    padding: 20px;
+}
+
+.qlik-container:empty::after {
+    content: "Loading Qlik Embed...";
+    color: #666;
+    font-style: italic;
+}
+
+.status-message {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    max-width: 300px;
+    z-index: 1000;
+}
+
+.status-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.status-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.status-info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}

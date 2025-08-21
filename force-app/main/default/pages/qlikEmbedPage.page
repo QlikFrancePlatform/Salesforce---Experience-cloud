@@ -1,0 +1,84 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" docType="html">
+    <html>
+        <head>
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <title>Qlik Embed Test</title>
+            
+            <!-- Include Salesforce Lightning Design System -->
+            <apex:slds/>
+            
+            <!-- Include Qlik Embed Web Components Script with proper configuration -->
+            <script type="text/javascript">
+                // Prevent WebAuthn conflicts by temporarily disabling the API
+                const originalCredentials = window.navigator.credentials;
+                if (originalCredentials) {
+                    Object.defineProperty(navigator, 'credentials', {
+                        value: undefined,
+                        writable: true,
+                        configurable: true
+                    });
+                }
+            </script>
+            
+            <script 
+                type="text/javascript" 
+                src="https://cdn.jsdelivr.net/npm/@qlik/embed-web-components@1/dist/index.min.js"
+                data-host="<QLIK_HOST>"
+                data-web-integration-id="<QLIK_WEB_INTEGRATION_ID>"
+                data-cross-site-cookies="true">
+            </script>
+            
+            <script type="text/javascript">
+                // Restore WebAuthn API after Qlik script loads
+                if (typeof originalCredentials !== 'undefined' && originalCredentials) {
+                    Object.defineProperty(navigator, 'credentials', {
+                        value: originalCredentials,
+                        writable: true,
+                        configurable: true
+                    });
+                }
+                
+                // Mark that the Qlik script is loaded
+                window.qlikEmbedScriptLoaded = true;
+                
+                console.log('Qlik Embed script loaded with host configuration');
+            </script>
+        </head>
+        <body>
+            <div class="slds-scope">
+                <div class="slds-page-header">
+                    <div class="slds-page-header__row">
+                        <div class="slds-page-header__col-title">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span class="slds-page-header__title">Qlik Embed Test</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slds-p-around_medium">
+                    <!-- Direct Qlik Embed Component -->
+                    <div class="qlik-container" style="height: 200px; min-height: 600px; border: 2px dashed #ddd; border-radius: 8px; padding: 20px; background-color: #fafafa;">
+                        <qlik-embed
+                            ui="analytics/chart"
+                            app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                            object-id="htaMkv">
+                        </qlik-embed>
+                    </div>
+                    
+                    <div class="slds-m-top_medium">
+                        <div class="slds-text-heading_small">Status:</div>
+                        <div id="status" class="slds-text-body_regular slds-text-color_success">
+                            Qlik Embed component loaded. Check browser console for any authentication issues.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>
+</apex:page>
