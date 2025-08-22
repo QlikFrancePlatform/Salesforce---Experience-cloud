@@ -245,4 +245,4 @@ Pour toute question ou problème :
 
 ---
 
-**Note** : Ce projet est maintenu par magikcypress Pour les mises à jour et le support, consultez régulièrement ce README.
+**Note** : Ce projet est maintenu par [Magik Cypress](https://github.com/magikcypress) Pour les mises à jour et le support, consultez régulièrement ce README.
