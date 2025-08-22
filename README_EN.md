@@ -243,4 +243,4 @@ For any questions or issues:
 
 ---
 
-**Note**: This project is maintained by magikcypress. For updates and support, regularly consult this README.
+**Note**: This project is maintained by [Magik Cypress](https://github.com/magikcypress). For updates and support, regularly consult this README.
