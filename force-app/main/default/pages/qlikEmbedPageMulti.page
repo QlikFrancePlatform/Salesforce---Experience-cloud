@@ -1,0 +1,184 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" docType="html">
+    <html>
+        <head>
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <title>Qlik Embed Experience Cloud</title>
+            
+            <!-- Include Salesforce Lightning Design System -->
+            <apex:slds/>
+            
+            <!-- Include Qlik Embed Web Components Script with proper configuration -->
+            <script type="text/javascript">
+                // Prevent WebAuthn conflicts by temporarily disabling the API
+                const originalCredentials = window.navigator.credentials;
+                if (originalCredentials) {
+                    Object.defineProperty(navigator, 'credentials', {
+                        value: undefined,
+                        writable: true,
+                        configurable: true
+                    });
+                }
+            </script>
+            
+            <script 
+                type="text/javascript" 
+                src="https://cdn.jsdelivr.net/npm/@qlik/embed-web-components@1/dist/index.min.js"
+                data-host="<QLIK_HOST>"
+                data-web-integration-id="<QLIK_WEB_INTEGRATION_ID>"
+                data-cross-site-cookies="true">
+            </script>
+            
+            <script type="text/javascript">
+                // Restore WebAuthn API after Qlik script loads
+                if (typeof originalCredentials !== 'undefined' && originalCredentials) {
+                    Object.defineProperty(navigator, 'credentials', {
+                        value: originalCredentials,
+                        writable: true,
+                        configurable: true
+                    });
+                }
+                
+                // Mark that the Qlik script is loaded
+                window.qlikEmbedScriptLoaded = true;
+                
+                console.log('Qlik Embed Multi script loaded with host configuration');
+            </script>
+            
+            <style>
+                .qlik-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 20px;
+                    margin-bottom: 30px;
+                }
+                
+                .qlik-stack {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                }
+                
+                .qlik-container {
+                    min-height: 300px;
+                    border: 2px dashed #ddd;
+                    border-radius: 8px;
+                    padding: 15px;
+                    background-color: #fafafa;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .qlik-container:empty::after {
+                    content: "Qlik Embed";
+                    color: #999;
+                    font-style: italic;
+                }
+                
+                .qlik-container.large {
+                    min-height: 400px;
+                    height: 350px;
+                }
+                
+                .qlik-container.medium {
+                    min-height: 300px;
+                }
+                
+                .qlik-container.small {
+                    min-height: 250px;
+                }
+
+                .qlik-selections {
+                    padding-bottom: 15px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="slds-scope">
+                <div class="slds-page-header">
+                    <div class="slds-page-header__row">
+                        <div class="slds-page-header__col-title">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span class="slds-page-header__title">Qlik Embed Experience Cloud</span>
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slds-p-around_medium">
+                    <div class="qlik-selections">
+                        <qlik-embed
+                            ui="analytics/selections"
+                            app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba">
+                        </qlik-embed>
+                    </div>
+                    <!-- First row: 4 qlik-embed components in a grid -->
+                    <div class="qlik-grid">
+                        <div class="qlik-container small">
+                            <qlik-embed
+                                ui="analytics/chart"
+                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                object-id="htaMkv">
+                            </qlik-embed>
+                        </div>
+                        
+                        <div class="qlik-container small">
+                            <qlik-embed
+                                ui="analytics/chart"
+                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                object-id="YGN">
+                            </qlik-embed>
+                        </div>
+                        
+                        <div class="qlik-container small">
+                            <qlik-embed
+                                ui="analytics/chart"
+                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                object-id="YMvKj">
+                            </qlik-embed>
+                        </div>
+                        
+                        <div class="qlik-container small">
+                            <qlik-embed
+                                ui="analytics/chart"
+                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                object-id="GXrPCS">
+                            </qlik-embed>
+                        </div>
+                    </div>
+                    
+                    <!-- Second row: 2 qlik-embed components stacked vertically -->
+                    <div class="qlik-stack">
+                        <div class="qlik-container large">
+                            <qlik-embed
+                                ui="analytics/chart"
+                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                object-id="mrdwGJ">
+                            </qlik-embed>
+                        </div>
+                        
+                        <div class="qlik-container large">
+                            <qlik-embed
+                                ui="analytics/chart"
+                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                object-id="pwGchT">
+                            </qlik-embed>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-m-top_medium">
+                        <div class="slds-text-heading_small">Status:</div>
+                        <div id="status" class="slds-text-body_regular slds-text-color_success">
+                            Qlik Embed Multi components loaded. Check browser console for any authentication issues.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>
+</apex:page>

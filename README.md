@@ -4,6 +4,8 @@
 
 Ce projet permet d'intégrer des composants Qlik Cloud dans Salesforce Experience Cloud en utilisant des composants Lightning Web Components (LWC) et des pages Visualforce.
 
+![Qlik Embed Multi](screenshots/Screenshot.png)
+
 ## 🎯 Vue d'ensemble
 
 Ce projet résout les défis d'intégration entre Qlik Cloud et Salesforce, notamment :
@@ -157,8 +159,9 @@ https://your-org.my.salesforce.com/apex/oauthCallback
 
 1. **Page principale** : `/apex/qlikEmbedPage`
 2. **Page d'authentification** : `/apex/qlikEmbedPageAuth`
-3. **Callback OAuth** : `/apex/oauthCallback`
-4. **Page Lightning** : Utiliser Lightning App Builder
+3. **Page multi-composants** : `/apex/qlikEmbedPageMulti`
+4. **Callback OAuth** : `/apex/oauthCallback`
+5. **Page Lightning** : Utiliser Lightning App Builder
 
 ### Vérifications
 
