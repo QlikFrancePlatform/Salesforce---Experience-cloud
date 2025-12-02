@@ -1,0 +1,181 @@
+<template>
+    <lightning-card title="Qlik Enigma.js" icon-name="custom:custom63">
+        <div class="slds-p-around_medium">
+            <!-- Status Message (always show errors, conditional for other messages) -->
+            <template if:true={statusMessage}>
+                <!-- Always show error messages -->
+                <template if:true={hasError}>
+                    <div class={statusClass} role="alert" style="padding: 1rem; margin-bottom: 1rem; border-radius: 0.25rem;">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                            <lightning-icon 
+                                icon-name="utility:error" 
+                                alternative-text="Error"
+                                size="small"
+                                class="slds-m-right_small">
+                            </lightning-icon>
+                            <span style="font-weight: 500;">{statusMessage}</span>
+                        </div>
+                        <!-- Login Link (shown when authentication is needed) -->
+                        <template if:true={loginUrl}>
+                            <div class="slds-m-top_medium">
+                                <a href={loginUrl} target="_blank" rel="noopener noreferrer" class="slds-button slds-button_brand slds-m-right_small" style="text-decoration: none; display: inline-block;">
+                                    Authenticate with Qlik Cloud
+                                </a>
+                                <a href={loginUrl} target="_blank" rel="noopener noreferrer" class="slds-button slds-button_neutral" style="text-decoration: none; display: inline-block;">
+                                    Open in New Tab
+                                </a>
+                                <p class="slds-text-color_weak slds-m-top_small slds-text-body_small">
+                                    <strong>Important:</strong> After authenticating with Qlik Cloud, please refresh this page to load the data.
+                                </p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <!-- Show other status messages only if showStatus is true -->
+                <template if:false={hasError}>
+                    <template if:true={showStatus}>
+                        <div class={statusClass} role="status" aria-live="polite" style="padding: 0.75rem; margin-bottom: 1rem; border-radius: 0.25rem;">
+                            <lightning-icon 
+                                if:true={isLoading}
+                                icon-name="utility:spinner" 
+                                alternative-text="Loading"
+                                size="x-small"
+                                class="slds-m-right_x-small spinner">
+                            </lightning-icon>
+                            <template if:false={isLoading}>
+                                <lightning-icon 
+                                    icon-name="utility:success" 
+                                    alternative-text="Success"
+                                    size="x-small"
+                                    class="slds-m-right_x-small">
+                                </lightning-icon>
+                            </template>
+                            <span>{statusMessage}</span>
+                        </div>
+                    </template>
+                </template>
+            </template>
+            
+            <!-- Loading Spinner -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center slds-text-align_center slds-m-bottom_medium">
+                    <lightning-spinner 
+                        alternative-text="Loading Qlik Enigma"
+                        size="medium">
+                    </lightning-spinner>
+                    <p class="slds-text-color_weak slds-m-top_small">Loading Qlik data...</p>
+                </div>
+            </template>
+            
+            <!-- Indicators Container -->
+            <div class="enigma-container">
+                <template if:true={hasIndicators}>
+                    <template for:each={indicators} for:item="indicator">
+                        <div key={indicator.id} class="indicator-container">
+                            <template if:true={indicator.data}>
+                                <!-- KPI Display -->
+                                <template if:true={indicator.isKpi}>
+                                    <div class="slds-card">
+                                        <div class="slds-card__header slds-grid">
+                                            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                <div class="slds-media__body">
+                                                    <h2 class="slds-card__header-title">
+                                                        <span>{indicator.data.label}</span>
+                                                    </h2>
+                                                </div>
+                                            </header>
+                                        </div>
+                                        <div class="slds-card__body slds-card__body_inner">
+                                            <div class="slds-text-heading_large slds-text-align_center" style="padding: 20px;">
+                                                {indicator.data.value}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <!-- Table Display -->
+                                <template if:true={indicator.isTable}>
+                                    <div class="slds-card">
+                                        <div class="slds-card__header slds-grid">
+                                            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                <div class="slds-media__body">
+                                                    <h2 class="slds-card__header-title">
+                                                        <span>{indicator.data.label}</span>
+                                                    </h2>
+                                                </div>
+                                            </header>
+                                        </div>
+                                        <div class="slds-card__body slds-card__body_inner">
+                                            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                                <tbody>
+                                                    <template for:each={indicator.data.data} for:item="row">
+                                                        <tr key={row.rowKey}>
+                                                            <template for:each={row.cells} for:item="cell">
+                                                                <td key={cell.cellKey} class="slds-cell-wrap">
+                                                                    {cell.qText} {cell.qNum}
+                                                                </td>
+                                                            </template>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <!-- List Display -->
+                                <template if:true={indicator.isList}>
+                                    <div class="slds-card">
+                                        <div class="slds-card__header slds-grid">
+                                            <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                                <div class="slds-media__body">
+                                                    <h2 class="slds-card__header-title">
+                                                        <span>{indicator.data.label}</span>
+                                                    </h2>
+                                                </div>
+                                            </header>
+                                        </div>
+                                        <div class="slds-card__body slds-card__body_inner">
+                                            <ul class="slds-list_dotted">
+                                                <template for:each={indicator.data.data} for:item="row">
+                                                    <li key={row.rowKey}>
+                                                        <template for:each={row.cells} for:item="cell">
+                                                            <span key={cell.cellKey}>{cell.qText}</span>
+                                                        </template>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <!-- Error Display -->
+                                <template if:true={indicator.isError}>
+                                    <div class="slds-card">
+                                        <div class="slds-card__body slds-card__body_inner">
+                                            <div class="slds-text-color_error">
+                                                Error: {indicator.data.message}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <!-- Empty Display -->
+                                <template if:true={indicator.isEmpty}>
+                                    <div class="slds-card">
+                                        <div class="slds-card__body slds-card__body_inner">
+                                            <div class="slds-text-body_regular">
+                                                No data available for {indicator.data.label}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </lightning-card>
+</template>
+

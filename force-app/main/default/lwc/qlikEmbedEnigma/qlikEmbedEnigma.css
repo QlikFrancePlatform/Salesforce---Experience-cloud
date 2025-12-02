@@ -1,20 +1,15 @@
-.qlik-container {
+.enigma-container {
     width: 100%;
-    min-height: 400px;
-    border: 1px solid #dddbda;
-    border-radius: 0.25rem;
-    background-color: #ffffff;
-    position: relative;
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: 600px;
 }
 
-/* Styles for dynamically injected Qlik embed element */
-.qlik-container > * {
-    width: 100%;
-    height: 100%;
+.indicator-container {
+    margin-bottom: 1rem;
+}
+
+.slds-card {
+    border: 1px solid #dddbda;
+    border-radius: 0.25rem;
 }
 
 /* Status Messages */
@@ -61,7 +56,8 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .qlik-container {
+    .enigma-container {
         padding: 0.5rem;
     }
 }
+

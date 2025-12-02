@@ -42,6 +42,9 @@ $RECYCLE.BIN/
 # Local environment variables
 .env
 
+# Custom Metadata Type records (local configuration - contains sensitive data)
+**/customMetadata/QlikConfig__mdt/*.md-meta.xml
+
 # Python Salesforce Functions
 **/__pycache__/
 **/.venv/

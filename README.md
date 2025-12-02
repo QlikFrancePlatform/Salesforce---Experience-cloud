@@ -19,20 +19,32 @@ Ce projet résout les défis d'intégration entre Qlik Cloud et Salesforce, nota
 ### Composants principaux
 
 1. **`qlikEmbed` LWC** - Composant Lightning Web Component réutilisable
-2. **`qlikEmbedPage`** - Page Visualforce de test avec intégration Qlik
-3. **`oauthCallback`** - Page de callback OAuth pour l'authentification
-4. **`qlikEmbedPageAuth`** - Page d'authentification Qlik
+2. **`qlikEmbedEnigma` LWC** - Composant LWC avec Enigma.js pour intégration Qlik Cloud avancée
+3. **`qlikEmbedPage`** - Page Visualforce de test avec intégration Qlik
+4. **`oauthCallback`** - Page de callback OAuth pour l'authentification
+5. **`qlikEmbedPageAuth`** - Page d'authentification Qlik
+6. **`QlikAuthService` Apex** - Service Apex pour authentification SSO Auth0
+7. **`QlikConfigService` Apex** - Service Apex pour gérer les variables d'environnement via Custom Metadata Types
+8. **`QlikConfig__mdt`** - Custom Metadata Type pour stocker la configuration Qlik
 
 ### Structure des fichiers
 
 ```
 force-app/main/default/
 ├── lwc/
-│   └── qlikEmbed/
-│       ├── qlikEmbed.js          # Logique du composant
-│       ├── qlikEmbed.html        # Template HTML
-│       ├── qlikEmbed.css         # Styles CSS
-│       └── qlikEmbed.js-meta.xml # Métadonnées LWC
+│   ├── qlikEmbed/
+│   │   ├── qlikEmbed.js          # Logique du composant
+│   │   ├── qlikEmbed.html        # Template HTML
+│   │   ├── qlikEmbed.css         # Styles CSS
+│   │   └── qlikEmbed.js-meta.xml # Métadonnées LWC
+│   └── qlikEmbedEnigma/
+│       ├── qlikEmbedEnigma.js    # Logique Enigma.js
+│       ├── qlikEmbedEnigma.html  # Template HTML
+│       ├── qlikEmbedEnigma.css   # Styles CSS
+│       └── qlikEmbedEnigma.js-meta.xml # Métadonnées LWC
+├── classes/
+│   ├── QlikAuthService.cls       # Service Apex pour SSO Auth0
+│   └── QlikAuthService.cls-meta.xml
 ├── pages/
 │   ├── qlikEmbedPage.page        # Page principale de test
 │   ├── qlikEmbedPage.page-meta.xml
@@ -65,20 +77,30 @@ force-app/main/default/
    sf org login web --set-default-dev-hub
    ```
 
-3. **Déployer les composants LWC**
+3. **Déployer les classes Apex**
+   ```bash
+   sf project deploy start --source-dir force-app/main/default/classes --target-org <your-org-alias>
+   ```
+
+4. **Déployer les composants LWC**
    ```bash
    sf project deploy start --source-dir force-app/main/default/lwc --target-org <your-org-alias>
    ```
 
-4. **Déployer les pages Visualforce**
+5. **Déployer les pages Visualforce**
    ```bash
    sf project deploy start --source-dir force-app/main/default/pages --target-org <your-org-alias>
    ```
 
-5. **Déployer les pages Lightning**
+6. **Déployer les pages Lightning**
    ```bash
    sf project deploy start --source-dir force-app/main/default/flexipages --target-org <your-org-alias>
    ```
+
+sfdx force:org:open -u qlik-auth0-dev-ed
+sfdx auth:web:login -r https://qlik-auth0-dev-ed.my.salesforce.com/ -a qlik-auth0-dev-ed
+
+
 
 ## ⚙️ Configuration
 
@@ -99,15 +121,24 @@ Chaque composant nécessite la configuration suivante :
 
 ### Variables d'environnement
 
-- `QLIK_HOST` - URL de votre instance Qlik Cloud
-- `QLIK_WEB_INTEGRATION_ID` - ID d'intégration web Qlik
-- `QLIK_CLIENT_ID` - CLIENT_ID de auht Qlik Cloud
-- `QLIK_APP_ID` - ID de l'application Qlik
-- `QLIK_OBJECT_ID` - ID de l'objet Qlik à afficher
+Les variables d'environnement sont gérées via **Custom Metadata Types** (`QlikConfig__mdt`). Voir [CONFIGURATION.md](CONFIGURATION.md) pour plus de détails.
+
+**Variables disponibles :**
+- `Host__c` - URL de votre instance Qlik Cloud
+- `WebIntegrationId__c` - ID d'intégration web Qlik
+- `ClientId__c` - CLIENT_ID Auth0 pour OAuth2
+- `RedirectUri__c` - URI de redirection OAuth2
+- `DefaultAppId__c` - ID de l'application Qlik par défaut
+
+**Avantages :**
+- ✅ Configuration centralisée
+- ✅ Pas de valeurs codées en dur
+- ✅ Gestion multi-environnements (dev, staging, prod)
+- ✅ Modifiable sans déploiement de code
 
 ## 🔧 Utilisation
 
-### Composant LWC
+### Composant LWC qlikEmbed
 
 ```html
 <!-- Dans une page Lightning -->
@@ -117,6 +148,32 @@ Chaque composant nécessite la configuration suivante :
     ui="analytics/chart">
 </c:qlikEmbed>
 ```
+
+### Composant LWC qlikEmbedEnigma
+
+Composant avancé utilisant Enigma.js pour intégration Qlik Cloud avec support SSO Auth0 :
+
+```html
+<!-- Dans Experience Builder -->
+<c:qlikEmbedEnigma
+    tenant="veg-eu.eu.qlikcloud.com"
+    app-id="your-app-id"
+    object-ids="htaMkv,YGN"
+    auth-type="oauth2"
+    client-id="your-auth0-client-id">
+</c:qlikEmbedEnigma>
+```
+
+**Propriétés principales :**
+- `authType` : `'webIntegration'` (défaut) ou `'oauth2'` pour SSO Auth0
+- `objectIds` : Liste d'IDs d'objets Qlik séparés par des virgules
+- `showStatus` : Afficher les messages de statut (défaut: `false`)
+
+**Fonctionnalités :**
+- Authentification transparente via Web Integration ID
+- Support SSO Auth0 via classe Apex `QlikAuthService`
+- Affichage dynamique de KPIs, tableaux et listes
+- Gestion automatique des erreurs et redirections
 
 ### Page Visualforce
 
@@ -135,6 +192,25 @@ L'URL de callback doit être configurée dans Qlik Cloud :
 ```
 https://your-org.my.salesforce.com/apex/oauthCallback
 ```
+
+### Classe Apex QlikAuthService
+
+Service Apex pour authentification SSO Auth0 avec Qlik Cloud :
+
+```apex
+// Méthode principale
+String token = QlikAuthService.getQlikAccessToken(tenant, clientId, redirectUri);
+```
+
+**Fonctionnalités :**
+- Récupération de l'identité utilisateur Salesforce (Email, Username, FederationIdentifier)
+- Échange d'identité Salesforce contre token Qlik Cloud via Auth0
+- Support Named Credential pour configuration Auth0
+
+**Configuration requise :**
+- Auth0 configuré pour accepter les identités Salesforce
+- Qlik Cloud configuré pour accepter les tokens Auth0
+- (Optionnel) Named Credential "Auth0" configuré dans Salesforce
 
 ## 🛠️ Résolution des problèmes
 
@@ -232,7 +308,14 @@ Pour toute question ou problème :
 
 ## 🔄 Versions
 
-### v1.0.0 (Actuelle)
+### v1.1.0 (Actuelle)
+- Composant LWC `qlikEmbedEnigma` avec Enigma.js
+- Classe Apex `QlikAuthService` pour SSO Auth0
+- Support authentification OAuth2/Auth0
+- Affichage dynamique de KPIs, tableaux et listes
+- Gestion des iframes sandboxés Experience Cloud
+
+### v1.0.0
 - Composant LWC qlikEmbed
 - Pages Visualforce de test
 - Gestion OAuth callback

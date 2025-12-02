@@ -1,12 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>59.0</apiVersion>
+    <apiVersion>60.0</apiVersion>
     <isExposed>true</isExposed>
     <targets>
         <target>lightning__AppPage</target>
         <target>lightning__RecordPage</target>
-        <target>lightning__HomePage</target>
+        <target>
+        lightning__HomePage</target>
         <target>lightningCommunity__Page</target>
-        <target>lightningCommunity__Default</target>
+        <target>
+        lightningCommunity__Default</target>
     </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage,lightning__RecordPage,lightning__HomePage">
+            <property name="appId" type="String" label="Qlik App ID"
+                description="The ID of the Qlik application. Leave empty to use QlikConfig__mdt."
+                default="" />
+            <property name="objectId" type="String" label="Qlik Object ID"
+                description="The ID of the Qlik object to display" default="htaMkv" />
+            <property name="host" type="String" label="Qlik Host"
+                description="The Qlik Cloud tenant URL. Leave empty to use QlikConfig__mdt."
+                default="" />
+            <property name="webIntegrationId" type="String" label="Web Integration ID"
+                description="The Qlik Web Integration ID for authentication. Leave empty to use QlikConfig__mdt."
+                default="" />
+            <property name="height" type="String" label="Height"
+                description="Height of the Qlik embed container (e.g., 400px, 50vh)" default="400px" />
+            <property name="ui" type="String" label="UI Type"
+                description="Type of Qlik UI to display" default="analytics/chart" />
+            <property name="theme" type="String" label="Theme"
+                description="Theme for the Qlik visualization (light or dark)" default="light" />
+            <property name="showStatus" type="Boolean" label="Show Status"
+                description="Display status messages" default="false" />
+        </targetConfig>
+    </targetConfigs>
 </LightningComponentBundle>

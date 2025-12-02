@@ -1,4 +1,4 @@
-<apex:page showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" docType="html">
+<apex:page controller="QlikPageController" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" docType="html">
     <html>
         <head>
             <meta charset="utf-8"/>
@@ -21,11 +21,12 @@
                 }
             </script>
             
+            <!-- Qlik Cloud configuration loaded from Custom Metadata Types -->
             <script 
                 type="text/javascript" 
                 src="https://cdn.jsdelivr.net/npm/@qlik/embed-web-components@1/dist/index.min.js"
-                data-host="<QLIK_HOST>"
-                data-web-integration-id="<QLIK_WEB_INTEGRATION_ID>"
+                data-host="{!qlikHost}"
+                data-web-integration-id="{!qlikWebIntegrationId}"
                 data-cross-site-cookies="true">
             </script>
             
@@ -114,7 +115,7 @@
                     <div class="qlik-selections">
                         <qlik-embed
                             ui="analytics/selections"
-                            app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba">
+                            app-id="{!qlikDefaultAppId}">
                         </qlik-embed>
                     </div>
                     <!-- First row: 4 qlik-embed components in a grid -->
@@ -122,7 +123,7 @@
                         <div class="qlik-container small">
                             <qlik-embed
                                 ui="analytics/chart"
-                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                app-id="{!qlikDefaultAppId}"
                                 object-id="htaMkv">
                             </qlik-embed>
                         </div>
@@ -130,7 +131,7 @@
                         <div class="qlik-container small">
                             <qlik-embed
                                 ui="analytics/chart"
-                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                app-id="{!qlikDefaultAppId}"
                                 object-id="YGN">
                             </qlik-embed>
                         </div>
@@ -138,7 +139,7 @@
                         <div class="qlik-container small">
                             <qlik-embed
                                 ui="analytics/chart"
-                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                app-id="{!qlikDefaultAppId}"
                                 object-id="YMvKj">
                             </qlik-embed>
                         </div>
@@ -146,7 +147,7 @@
                         <div class="qlik-container small">
                             <qlik-embed
                                 ui="analytics/chart"
-                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                app-id="{!qlikDefaultAppId}"
                                 object-id="GXrPCS">
                             </qlik-embed>
                         </div>
@@ -157,7 +158,7 @@
                         <div class="qlik-container large">
                             <qlik-embed
                                 ui="analytics/chart"
-                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                app-id="{!qlikDefaultAppId}"
                                 object-id="mrdwGJ">
                             </qlik-embed>
                         </div>
@@ -165,7 +166,7 @@
                         <div class="qlik-container large">
                             <qlik-embed
                                 ui="analytics/chart"
-                                app-id="c5370f35-f4fe-40cb-b0b4-d0a7e6dee1ba"
+                                app-id="{!qlikDefaultAppId}"
                                 object-id="pwGchT">
                             </qlik-embed>
                         </div>

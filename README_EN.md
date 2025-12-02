@@ -1,5 +1,7 @@
 # Qlik Embed Salesforce Experience Cloud
 
+[🇫🇷 Version française disponible ici](README.md)
+
 This project enables the integration of Qlik Cloud components into Salesforce Experience Cloud using Lightning Web Components (LWC) and Visualforce pages.
 
 ![Qlik Embed Multi](screenshots/Screenshot.png)
@@ -17,20 +19,30 @@ This project solves the integration challenges between Qlik Cloud and Salesforce
 ### Main Components
 
 1. **`qlikEmbed` LWC** - Reusable Lightning Web Component
-2. **`qlikEmbedPage`** - Visualforce test page with Qlik integration
-3. **`oauthCallback`** - OAuth callback page for authentication
-4. **`qlikEmbedPageAuth`** - Qlik authentication page
+2. **`qlikEmbedEnigma` LWC** - Advanced LWC component with Enigma.js for Qlik Cloud integration
+3. **`qlikEmbedPage`** - Visualforce test page with Qlik integration
+4. **`oauthCallback`** - OAuth callback page for authentication
+5. **`qlikEmbedPageAuth`** - Qlik authentication page
+6. **`QlikAuthService` Apex** - Apex service for Auth0 SSO authentication
 
 ### File Structure
 
 ```
 force-app/main/default/
 ├── lwc/
-│   └── qlikEmbed/
-│       ├── qlikEmbed.js          # Component logic
-│       ├── qlikEmbed.html        # HTML template
-│       ├── qlikEmbed.css         # CSS styles
-│       └── qlikEmbed.js-meta.xml # LWC metadata
+│   ├── qlikEmbed/
+│   │   ├── qlikEmbed.js          # Component logic
+│   │   ├── qlikEmbed.html        # HTML template
+│   │   ├── qlikEmbed.css         # CSS styles
+│   │   └── qlikEmbed.js-meta.xml # LWC metadata
+│   └── qlikEmbedEnigma/
+│       ├── qlikEmbedEnigma.js    # Enigma.js logic
+│       ├── qlikEmbedEnigma.html  # HTML template
+│       ├── qlikEmbedEnigma.css   # CSS styles
+│       └── qlikEmbedEnigma.js-meta.xml # LWC metadata
+├── classes/
+│   ├── QlikAuthService.cls       # Apex service for Auth0 SSO
+│   └── QlikAuthService.cls-meta.xml
 ├── pages/
 │   ├── qlikEmbedPage.page        # Main test page
 │   ├── qlikEmbedPage.page-meta.xml
@@ -63,17 +75,22 @@ force-app/main/default/
    sf org login web --set-default-dev-hub
    ```
 
-3. **Deploy LWC components**
+3. **Deploy Apex classes**
+   ```bash
+   sf project deploy start --source-dir force-app/main/default/classes --target-org <your-org-alias>
+   ```
+
+4. **Deploy LWC components**
    ```bash
    sf project deploy start --source-dir force-app/main/default/lwc --target-org <your-org-alias>
    ```
 
-4. **Deploy Visualforce pages**
+5. **Deploy Visualforce pages**
    ```bash
    sf project deploy start --source-dir force-app/main/default/pages --target-org <your-org-alias>
    ```
 
-5. **Deploy Lightning pages**
+6. **Deploy Lightning pages**
    ```bash
    sf project deploy start --source-dir force-app/main/default/flexipages --target-org <your-org-alias>
    ```
@@ -105,7 +122,7 @@ Each component requires the following configuration:
 
 ## 🔧 Usage
 
-### LWC Component
+### LWC Component qlikEmbed
 
 ```html
 <!-- In a Lightning page -->
@@ -115,6 +132,32 @@ Each component requires the following configuration:
     ui="analytics/chart">
 </c:qlikEmbed>
 ```
+
+### LWC Component qlikEmbedEnigma
+
+Advanced component using Enigma.js for Qlik Cloud integration with Auth0 SSO support:
+
+```html
+<!-- In Experience Builder -->
+<c:qlikEmbedEnigma
+    tenant="veg-eu.eu.qlikcloud.com"
+    app-id="your-app-id"
+    object-ids="htaMkv,YGN"
+    auth-type="oauth2"
+    client-id="your-auth0-client-id">
+</c:qlikEmbedEnigma>
+```
+
+**Main properties:**
+- `authType`: `'webIntegration'` (default) or `'oauth2'` for Auth0 SSO
+- `objectIds`: Comma-separated list of Qlik object IDs
+- `showStatus`: Display status messages (default: `false`)
+
+**Features:**
+- Transparent authentication via Web Integration ID
+- Auth0 SSO support via `QlikAuthService` Apex class
+- Dynamic display of KPIs, tables, and lists
+- Automatic error handling and redirects
 
 ### Visualforce Page
 
@@ -133,6 +176,25 @@ The callback URL must be configured in Qlik Cloud:
 ```
 https://your-org.my.salesforce.com/apex/oauthCallback
 ```
+
+### Apex Class QlikAuthService
+
+Apex service for Auth0 SSO authentication with Qlik Cloud:
+
+```apex
+// Main method
+String token = QlikAuthService.getQlikAccessToken(tenant, clientId, redirectUri);
+```
+
+**Features:**
+- Retrieves Salesforce user identity (Email, Username, FederationIdentifier)
+- Exchanges Salesforce identity for Qlik Cloud token via Auth0
+- Supports Named Credential for Auth0 configuration
+
+**Required configuration:**
+- Auth0 configured to accept Salesforce identities
+- Qlik Cloud configured to accept Auth0 tokens
+- (Optional) Named Credential "Auth0" configured in Salesforce
 
 ## 🛠️ Troubleshooting
 
@@ -244,7 +306,14 @@ For any questions or issues:
 
 ## 🔄 Versions
 
-### v1.0.0 (Current)
+### v1.1.0 (Current)
+- `qlikEmbedEnigma` LWC component with Enigma.js
+- `QlikAuthService` Apex class for Auth0 SSO
+- OAuth2/Auth0 authentication support
+- Dynamic display of KPIs, tables, and lists
+- Experience Cloud sandboxed iframe handling
+
+### v1.0.0
 - qlikEmbed LWC component
 - Visualforce test pages
 - OAuth callback handling

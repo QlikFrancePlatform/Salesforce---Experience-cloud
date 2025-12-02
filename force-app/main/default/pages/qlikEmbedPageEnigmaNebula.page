@@ -1,0 +1,600 @@
+<apex:page controller="QlikPageController" showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" docType="html">
+    <html>
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Qlik Embed Enigma - Indicateurs</title>
+
+        <!-- Include Salesforce Lightning Design System -->
+        <apex:slds/>
+
+        <!-- Include Qlik Embed Web Components Script for authentication -->
+        <script type="text/javascript">
+            // Prevent WebAuthn conflicts by temporarily disabling the API
+            const originalCredentials = window.navigator.credentials;
+            if (originalCredentials) {
+                Object.defineProperty(navigator, 'credentials', {
+                    value: undefined,
+                    writable: true,
+                    configurable: true
+                });
+            }
+        </script>
+
+
+        <!-- Include enigma.js library -->
+        <script src="https://unpkg.com/enigma.js@2.7.3/enigma.min.js"></script>
+        
+        <!-- Include Nebula.js libraries for bar chart -->
+        <!-- Use dynamic import in a module context -->
+        <script type="module">
+            (async function() {
+                try {
+                    console.log('Starting to load Nebula.js modules...');
+                    
+                    // Load Nebula.js using dynamic imports
+                    const [stardustModule, barChartModule] = await Promise.all([
+                        import('https://unpkg.com/@nebula.js/stardust@4/dist/stardust.js'),
+                        import('https://unpkg.com/@nebula.js/sn-bar-chart@1/dist/sn-bar-chart.js')
+                    ]);
+                    
+                    console.log('Modules loaded, extracting defaults...');
+                    console.log('stardustModule:', stardustModule);
+                    console.log('barChartModule:', barChartModule);
+                    
+                    // Extract the default export or the module itself
+                    const stardust = stardustModule.default || stardustModule;
+                    const snBarChart = barChartModule.default || barChartModule;
+                    
+                    console.log('stardust:', typeof stardust, stardust);
+                    console.log('snBarChart:', typeof snBarChart, snBarChart);
+                    
+                    if (!stardust || typeof stardust !== 'function') {
+                        throw new Error('stardust is not a function');
+                    }
+                    
+                    if (!snBarChart) {
+                        throw new Error('snBarChart is not available');
+                    }
+                    
+                    // Register bar chart with stardust
+                    console.log('Registering bar chart with stardust...');
+                    stardust(snBarChart);
+                    
+                    // Create embed function and make it available globally
+                    if (typeof stardust.embed !== 'function') {
+                        throw new Error('stardust.embed is not a function');
+                    }
+                    
+                    window.stardustEmbed = stardust.embed;
+                    window.nebulaReady = true;
+                    
+                    console.log('Nebula.js libraries loaded and bar chart registered successfully');
+                    console.log('stardustEmbed available:', typeof window.stardustEmbed);
+                } catch (error) {
+                    console.error('Error loading/initializing Nebula.js:', error);
+                    console.error('Error stack:', error.stack);
+                    window.nebulaReady = false;
+                    window.nebulaError = error.message;
+                }
+            })();
+        </script>
+        
+        <!-- Fallback: Initialize nebulaReady as false if module fails -->
+        <script type="text/javascript">
+            if (typeof window.nebulaReady === 'undefined') {
+                window.nebulaReady = false;
+            }
+        </script>
+
+        <script type="text/javascript">
+            // Restore WebAuthn API after Qlik script loads
+            if (typeof originalCredentials !== 'undefined' && originalCredentials) {
+                Object.defineProperty(navigator, 'credentials', {
+                    value: originalCredentials,
+                    writable: true,
+                    configurable: true
+                });
+            }
+
+            // Configuration Qlik Cloud inspirée de l'article community
+            // https://community.qlik.com/t5/Design/Interacting-with-data-using-Enigma-js-PT-3-Evaluate-amp-Monitor/ba-p/2082377
+            // Configuration loaded from Custom Metadata Types
+            const QLIK_CLOUD_CONFIG = {
+                tenant: '{!qlikTenant}', 
+                webIntegrationId: '{!qlikWebIntegrationId}',
+                appId: '{!qlikDefaultAppId}',
+                objectIds: ['htaMkv', 'YGN', 'mrdwGJ', 'pwGchT'],
+                identity: 'SalesforcePortal'
+            };
+
+            async function qlikLogin() {
+                const response = await fetch(`https://${QLIK_CLOUD_CONFIG.tenant}/api/v1/users/me`, {
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'qlik-web-integration-id': QLIK_CLOUD_CONFIG.webIntegrationId
+                    }
+                });
+
+                if (response.status === 200) {
+                    sessionStorage.removeItem('tryQlikAuth');
+                    return true;
+                }
+
+                if (!sessionStorage.getItem('tryQlikAuth')) {
+                    sessionStorage.setItem('tryQlikAuth', '1');
+                    const loginUrl = `https://${QLIK_CLOUD_CONFIG.tenant}/login?qlik-web-integration-id=${QLIK_CLOUD_CONFIG.webIntegrationId}&returnto=${encodeURIComponent(window.location.href)}`;
+                    window.location.href = loginUrl;
+                    await new Promise(resolve => setTimeout(resolve, 10000));
+                } else {
+                    sessionStorage.removeItem('tryQlikAuth');
+                    throw new Error('Connexion Qlik Cloud impossible (cookies tiers ?).');
+                }
+                return false;
+            }
+
+            async function getQCSHeaders() {
+                const response = await fetch(`https://${QLIK_CLOUD_CONFIG.tenant}/api/v1/csrf-token`, {
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'qlik-web-integration-id': QLIK_CLOUD_CONFIG.webIntegrationId
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Impossible de récupérer le token CSRF (${response.status}).`);
+                }
+
+                const csrfToken = response.headers.get('qlik-csrf-token');
+                if (!csrfToken) {
+                    throw new Error('Token CSRF manquant dans la réponse Qlik Cloud.');
+                }
+
+                return {
+                    'qlik-web-integration-id': QLIK_CLOUD_CONFIG.webIntegrationId,
+                    'qlik-csrf-token': csrfToken
+                };
+            }
+
+            // Fonction pour mettre à jour le statut
+            function updateStatus(message, isError = false) {
+                const statusEl = document.getElementById('status');
+                if (statusEl) {
+                    statusEl.textContent = message;
+                    statusEl.className = isError 
+                        ? 'slds-text-body_regular slds-text-color_error' 
+                        : 'slds-text-body_regular slds-text-color_success';
+                }
+            }
+
+            // Fonction pour afficher un indicateur
+            function displayIndicator(containerId, data, objectId) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                try {
+                    // Extraire les données du layout
+                    const layout = data.qLayout || data;
+                    const qMeta = layout.qMeta || {};
+                    const title = qMeta.title || `Objet ${objectId}`;
+                    
+                    // Essayer différents types d'objets Qlik
+                    let displayData = null;
+                    
+                    // 1. KPI (qkpi)
+                    if (layout.qkpi) {
+                        const kpi = layout.qkpi;
+                        displayData = {
+                            type: 'kpi',
+                            value: kpi.qValue?.qText || kpi.qValue?.qNum || 'N/A',
+                            label: title
+                        };
+                    }
+                    // 2. HyperCube (graphiques, tableaux)
+                    else if (layout.qHyperCube) {
+                        const hyperCube = layout.qHyperCube;
+                        if (hyperCube.qDataPages && hyperCube.qDataPages[0]) {
+                            const matrix = hyperCube.qDataPages[0].qMatrix;
+                            if (matrix && matrix.length > 0) {
+                                // Pour un KPI simple, prendre la première valeur
+                                if (matrix.length === 1 && matrix[0].length === 1) {
+                                    displayData = {
+                                        type: 'kpi',
+                                        value: matrix[0][0]?.qText || matrix[0][0]?.qNum || 'N/A',
+                                        label: title
+                                    };
+                                } else {
+                                    // Pour un tableau, afficher les premières lignes
+                                    displayData = {
+                                        type: 'table',
+                                        data: matrix.slice(0, 10), // Limiter à 10 lignes
+                                        label: title
+                                    };
+                                }
+                            }
+                        }
+                    }
+                    // 3. ListObject (listes de valeurs)
+                    else if (layout.qListObject) {
+                        const listObject = layout.qListObject;
+                        if (listObject.qDataPages && listObject.qDataPages[0]) {
+                            const matrix = listObject.qDataPages[0].qMatrix;
+                            if (matrix && matrix.length > 0) {
+                                displayData = {
+                                    type: 'list',
+                                    data: matrix.slice(0, 10),
+                                    label: title
+                                };
+                            }
+                        }
+                    }
+                    
+                    // Afficher les données
+                    if (displayData) {
+                        if (displayData.type === 'kpi') {
+                            container.innerHTML = `
+                                <div class="slds-card">
+                                    <div class="slds-card__header slds-grid">
+                                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                            <div class="slds-media__body">
+                                                <h2 class="slds-card__header-title">
+                                                    <span>${displayData.label}</span>
+                                                </h2>
+                                            </div>
+                                        </header>
+                                    </div>
+                                    <div class="slds-card__body slds-card__body_inner">
+                                        <div class="slds-text-heading_large slds-text-align_center" style="padding: 20px;">
+                                            ${displayData.value}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            // Afficher un tableau pour les données complexes
+                            let tableRows = '';
+                            displayData.data.forEach(row => {
+                                const cells = row.map(cell => 
+                                    `<td class="slds-cell-wrap">${cell?.qText || cell?.qNum || ''}</td>`
+                                ).join('');
+                                tableRows += `<tr>${cells}</tr>`;
+                            });
+                            
+                            container.innerHTML = `
+                                <div class="slds-card">
+                                    <div class="slds-card__header slds-grid">
+                                        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                            <div class="slds-media__body">
+                                                <h2 class="slds-card__header-title">
+                                                    <span>${displayData.label}</span>
+                                                </h2>
+                                            </div>
+                                        </header>
+                                    </div>
+                                    <div class="slds-card__body slds-card__body_inner">
+                                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                            <tbody>
+                                                ${tableRows}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        container.innerHTML = `
+                            <div class="slds-card">
+                                <div class="slds-card__body slds-card__body_inner">
+                                    <div class="slds-text-body_regular">
+                                        Aucune donnée disponible pour ${title}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error displaying indicator:', error);
+                    container.innerHTML = `<div class="slds-text-color_error">Erreur d'affichage: ${error.message}</div>`;
+                }
+            }
+
+            function prepareIndicatorContainers(count) {
+                const container = document.getElementById('indicators-container');
+                if (!container) {
+                    return [];
+                }
+                const ids = [];
+                container.innerHTML = '';
+                for (let i = 0; i < count; i++) {
+                    const indicator = document.createElement('div');
+                    indicator.id = `indicator-${i}`;
+                    indicator.className = 'indicator-container';
+                    // Pour les graphiques nebula, ajouter une classe spéciale et une hauteur minimale
+                    if (QLIK_CLOUD_CONFIG.objectIds[i] === 'mrdwGJ') {
+                        indicator.className += ' nebula-chart-container';
+                        indicator.style.minHeight = '400px';
+                        indicator.style.width = '100%';
+                    }
+                    container.appendChild(indicator);
+                    ids.push(indicator.id);
+                }
+                return ids;
+            }
+
+            // Fonction pour attendre que Nebula.js soit chargé
+            async function waitForNebula() {
+                let attempts = 0;
+                const maxAttempts = 150; // 15 secondes max (les modules peuvent prendre du temps)
+                while (attempts < maxAttempts) {
+                    // Check if Nebula.js is ready
+                    const isReady = window.nebulaReady === true && typeof window.stardustEmbed !== 'undefined';
+                    
+                    if (isReady) {
+                        console.log('Nebula.js is ready!');
+                        return true;
+                    }
+                    
+                    // Debug logging every 5 seconds
+                    if (attempts % 50 === 0) {
+                        console.log(`Waiting for Nebula.js... (attempt ${attempts}/${maxAttempts})`);
+                        console.log('nebulaReady:', window.nebulaReady);
+                        console.log('stardustEmbed:', typeof window.stardustEmbed);
+                        
+                        // Check if module script is still loading
+                        const moduleScripts = Array.from(document.querySelectorAll('script[type="module"]'));
+                        console.log('Module scripts found:', moduleScripts.length);
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                // Final check before throwing error
+                if (window.nebulaReady === true && typeof window.stardustEmbed !== 'undefined') {
+                    return true;
+                }
+                
+                throw new Error('Nebula.js libraries failed to load after 15 seconds. Please check your network connection and browser console. Make sure the CDN scripts are accessible and that your browser supports ES6 modules.');
+            }
+
+            // Fonction pour afficher un graphique en barre avec Nebula.js
+            async function displayNebulaBarChart(containerId, app, objectId) {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    console.error(`Container ${containerId} not found`);
+                    return;
+                }
+
+                try {
+                    // Attendre que Nebula.js soit chargé
+                    await waitForNebula();
+
+                    // Créer un conteneur pour le graphique
+                    container.innerHTML = `
+                        <div class="slds-card">
+                            <div class="slds-card__header slds-grid">
+                                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <span>Graphique en barres - ${objectId}</span>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-card__body slds-card__body_inner" style="padding: 0;">
+                                <div id="nebula-chart-${objectId}" style="width: 100%; height: 400px;"></div>
+                            </div>
+                        </div>
+                    `;
+
+                    const chartContainer = document.getElementById(`nebula-chart-${objectId}`);
+                    if (!chartContainer) {
+                        throw new Error('Chart container not created');
+                    }
+
+                    // Initialiser Nebula.js avec l'application
+                    if (typeof window.stardustEmbed === 'undefined') {
+                        throw new Error('stardustEmbed is not available. Nebula.js may not be loaded correctly.');
+                    }
+                    
+                    const embed = window.stardustEmbed(app, {
+                        context: {
+                            theme: 'light',
+                            language: 'en-US'
+                        }
+                    });
+
+                    // Rendre l'objet existant avec l'ID mrdwGJ
+                    // Le type sera automatiquement détecté depuis l'objet Qlik
+                    const nebbie = await embed.render({
+                        element: chartContainer,
+                        id: objectId
+                    });
+
+                    // Stocker la référence pour pouvoir la nettoyer plus tard
+                    window[`nebulaChart_${objectId}`] = nebbie;
+
+                    console.log(`Nebula bar chart rendered for object ${objectId}`);
+                } catch (error) {
+                    console.error(`Error rendering Nebula bar chart for ${objectId}:`, error);
+                    container.innerHTML = `
+                        <div class="slds-card">
+                            <div class="slds-card__body slds-card__body_inner">
+                                <div class="slds-text-color_error">
+                                    Erreur lors du rendu du graphique Nebula: ${error.message}
+                                    <br><small>Vérifiez que les bibliothèques Nebula.js sont chargées correctement.</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            function buildQueryParams(headers) {
+                return Object.entries(headers)
+                    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+                    .join('&');
+            }
+
+            // Fonction principale pour se connecter avec enigma.js
+            async function connectWithEnigma() {
+                try {
+                    // Attendre un peu pour que les modules Nebula.js aient le temps de se charger
+                    updateStatus('Attente du chargement de Nebula.js...');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    updateStatus('Connexion à Qlik avec enigma.js...');
+
+                    const loggedIn = await qlikLogin();
+                    if (!loggedIn) {
+                        updateStatus('Redirection vers la page de connexion Qlik...', true);
+                        return;
+                    }
+
+                    updateStatus('Récupération du token CSRF...');
+                    const qcsHeaders = await getQCSHeaders();
+                    const queryParams = buildQueryParams(qcsHeaders);
+                    const identitySegment = QLIK_CLOUD_CONFIG.identity ? `/identity/${encodeURIComponent(QLIK_CLOUD_CONFIG.identity)}` : '';
+                    const wsUrl = `wss://${QLIK_CLOUD_CONFIG.tenant}/app/${QLIK_CLOUD_CONFIG.appId}${identitySegment}?${queryParams}`;
+                    
+                    // Charger le schéma enigma.js
+                    updateStatus('Chargement du schéma enigma.js...');
+                    const schema = await fetch('https://unpkg.com/enigma.js@2.7.3/schemas/12.612.0.json')
+                        .then(res => {
+                            if (!res.ok) {
+                                throw new Error(`Erreur lors du chargement du schéma: ${res.status}`);
+                            }
+                            return res.json();
+                        });
+
+                    // Créer la session enigma.js
+                    // Pour le navigateur, on utilise WebSocket natif
+                    // L'authentification se fait via les cookies de session créés par @qlik/embed-web-components
+                    updateStatus('Création de la session enigma.js...');
+                    const session = enigma.create({
+                        schema: schema,
+                        url: wsUrl
+                    });
+
+                    // Écouter les événements de trafic (optionnel, pour debug)
+                    session.on('traffic:sent', (data) => console.log('enigma sent:', data));
+                    session.on('traffic:received', (data) => console.log('enigma received:', data));
+                    session.on('closed', () => console.log('enigma session closed'));
+
+                    // Ouvrir la session
+                    const global = await session.open();
+                    updateStatus('Connecté à Qlik! Récupération des indicateurs...');
+
+                    // Ouvrir le document (app)
+                    const app = await global.openDoc(QLIK_CLOUD_CONFIG.appId);
+                    updateStatus('Application ouverte. Récupération des données...');
+
+                    const indicatorIds = prepareIndicatorContainers(QLIK_CLOUD_CONFIG.objectIds.length);
+
+                    // Récupérer les indicateurs pour chaque objet
+                    for (let i = 0; i < QLIK_CLOUD_CONFIG.objectIds.length; i++) {
+                        const objectId = QLIK_CLOUD_CONFIG.objectIds[i];
+                        try {
+                            updateStatus(`Récupération de l'objet ${objectId}...`);
+                            
+                            const containerId = indicatorIds[i] || `indicator-${i}`;
+                            
+                            // Si c'est l'objet mrdwGJ, utiliser Nebula.js pour afficher un graphique en barre
+                            if (objectId === 'mrdwGJ') {
+                                updateStatus(`Rendu du graphique en barre Nebula pour ${objectId}...`);
+                                await displayNebulaBarChart(containerId, app, objectId);
+                            } else {
+                                // Pour les autres objets, utiliser l'affichage standard
+                                // Obtenir l'objet
+                                const obj = await app.getObject(objectId);
+                                
+                                // Obtenir le layout avec les données
+                                const layout = await obj.getLayout();
+                                
+                                // Afficher l'indicateur
+                                displayIndicator(containerId, layout, objectId);
+                                
+                                // Écouter les changements
+                                obj.on('changed', async () => {
+                                    const updatedLayout = await obj.getLayout();
+                                    displayIndicator(containerId, updatedLayout, objectId);
+                                });
+                            }
+                            
+                        } catch (error) {
+                            console.error(`Error fetching object ${objectId}:`, error);
+                            const containerId = indicatorIds[i] || `indicator-${i}`;
+                            const container = document.getElementById(containerId);
+                            if (container) {
+                                container.innerHTML = `<div class="slds-text-color_error">Erreur: ${error.message}</div>`;
+                            }
+                        }
+                    }
+
+                    updateStatus('Indicateurs récupérés avec succès!');
+                    
+                    // Garder la session ouverte
+                    window.qlikSession = session;
+                    window.qlikApp = app;
+
+                } catch (error) {
+                    console.error('Error connecting with enigma.js:', error);
+                    updateStatus(`Erreur de connexion: ${error.message}`, true);
+                }
+            }
+
+            // Attendre que le script Qlik soit chargé avant de se connecter
+            window.addEventListener('load', () => {
+                // Attendre un peu pour que le token soit disponible
+                setTimeout(() => {
+                    connectWithEnigma();
+                }, 2000);
+            });
+        </script>
+
+        <style>
+            .indicator-container {
+                margin-bottom: 20px;
+            }
+            .slds-card {
+                border: 1px solid #dddbda;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="slds-scope">
+            <div class="slds-page-header">
+                <div class="slds-page-header__row">
+                    <div class="slds-page-header__col-title">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title">Qlik Enigma.js - Indicateurs</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slds-p-around_medium">
+                <!-- Zone d'affichage des indicateurs (remplie dynamiquement) -->
+                <div id="indicators-container"></div>
+
+                <div class="slds-m-top_medium">
+                    <div class="slds-text-heading_small">Status:</div>
+                    <div id="status" class="slds-text-body_regular slds-text-color_success">
+                        Initialisation de la connexion enigma.js...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    </html>
+</apex:page>

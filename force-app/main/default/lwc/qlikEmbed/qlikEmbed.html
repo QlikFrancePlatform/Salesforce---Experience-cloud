@@ -1,11 +1,54 @@
 <template>
-    <!-- Qlik Embed Web Component -->
-    <div class="qlik-container">
-        <!-- Qlik embed element will be created here by JavaScript -->
-        <div class="status-message" if:true={showStatus}>
-            <div class={statusClass}>
-                {statusMessage}
+    <lightning-card title="Qlik Embed" icon-name="custom:custom63">
+        <div class="slds-p-around_medium">
+            <!-- Status Message -->
+            <template if:true={showStatus}>
+                <template if:true={statusMessage}>
+                    <div class={statusClass} role="status" aria-live="polite">
+                        <lightning-icon 
+                            if:true={isLoading}
+                            icon-name="utility:spinner" 
+                            alternative-text="Loading"
+                            size="x-small"
+                            class="slds-m-right_x-small spinner">
+                        </lightning-icon>
+                        <lightning-icon 
+                            if:true={hasError}
+                            icon-name="utility:error" 
+                            alternative-text="Error"
+                            size="x-small"
+                            class="slds-m-right_x-small">
+                        </lightning-icon>
+                        <template if:false={isLoading}>
+                            <template if:false={hasError}>
+                                <lightning-icon 
+                                    icon-name="utility:success" 
+                                    alternative-text="Success"
+                                    size="x-small"
+                                    class="slds-m-right_x-small">
+                                </lightning-icon>
+                            </template>
+                        </template>
+                        <span>{statusMessage}</span>
+                    </div>
+                </template>
+            </template>
+            
+            <!-- Loading Spinner -->
+            <template if:true={isLoading}>
+                <div class="slds-align_absolute-center slds-text-align_center slds-m-bottom_medium">
+                    <lightning-spinner 
+                        alternative-text="Loading Qlik Embed"
+                        size="medium">
+                    </lightning-spinner>
+                    <p class="slds-text-color_weak slds-m-top_small">Loading Qlik visualization...</p>
+                </div>
+            </template>
+            
+            <!-- Qlik Embed Container (manual DOM manipulation) -->
+            <div class="qlik-container" lwc:dom="manual">
+                <!-- Qlik embed element will be created here by JavaScript -->
             </div>
         </div>
-    </div>
+    </lightning-card>
 </template>

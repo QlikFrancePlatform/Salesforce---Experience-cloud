@@ -1,0 +1,329 @@
+<apex:page showHeader="false" sidebar="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" docType="html">
+    <html>
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Qlik Embed - Page d'accueil</title>
+
+        <!-- Include Salesforce Lightning Design System -->
+        <apex:slds/>
+
+        <style>
+            .page-card {
+                transition: transform 0.2s, box-shadow 0.2s;
+                cursor: pointer;
+                height: 350px;
+                margin-bottom: 15px;
+                display: flex;
+                flex-direction: column;
+            }
+            .page-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            .page-card .slds-card__body {
+                flex: 1;
+                overflow: hidden;
+            }
+            .badge {
+                display: inline-block;
+                padding: 0.25rem 0.5rem;
+                border-radius: 0.25rem;
+                font-size: 0.75rem;
+                font-weight: 600;
+                margin-left: 0.5rem;
+            }
+            .badge-primary {
+                background-color: #0176d3;
+                color: white;
+            }
+            .badge-success {
+                background-color: #04844b;
+                color: white;
+            }
+            .badge-warning {
+                background-color: #fe9339;
+                color: white;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="slds-scope">
+            <!-- Header -->
+            <div class="slds-page-header">
+                <div class="slds-page-header__row">
+                    <div class="slds-page-header__col-title">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title">Qlik Embed - Intégration Salesforce</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slds-p-around_large">
+                <!-- Introduction -->
+                <div class="slds-card slds-m-bottom_large">
+                    <div class="slds-card__header">
+                        <header class="slds-media slds-media_center">
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">
+                                    <span>Bienvenue</span>
+                                </h2>
+                            </div>
+                        </header>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <p class="slds-text-body_regular">
+                            Cette page d'accueil vous permet d'accéder à toutes les pages de démonstration 
+                            de l'intégration Qlik Cloud avec Salesforce. Chaque page illustre une approche 
+                            différente pour intégrer des visualisations Qlik dans votre Experience Cloud.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Pages Grid -->
+                <div class="slds-grid slds-gutters slds-wrap">
+                    
+                    <!-- Page 1: Qlik Embed Web Components -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3">
+                        <div class="slds-card page-card" onclick="window.location.href='/apex/qlikEmbedPage'">
+                            <div class="slds-card__header">
+                                <header class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <span>Qlik Embed Web Components</span>
+                                            <span class="badge badge-primary">Basique</span>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <p class="slds-text-body_regular slds-m-bottom_small">
+                                    Intégration simple utilisant les composants web officiels de Qlik (@qlik/embed-web-components). 
+                                    Cette approche est la plus simple et recommandée pour une intégration rapide.
+                                </p>
+                                <ul class="slds-list_dotted slds-m-left_medium">
+                                    <li>Authentification automatique</li>
+                                    <li>Composants prêts à l'emploi</li>
+                                    <li>Configuration minimale</li>
+                                </ul>
+                            </div>
+                            <div class="slds-card__footer">
+                                <a href="/apex/qlikEmbedPage" class="slds-button slds-button_brand">
+                                    Accéder à la page
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Page 2: Qlik Embed Multi -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3">
+                        <div class="slds-card page-card" onclick="window.location.href='/apex/qlikEmbedPageMulti'">
+                            <div class="slds-card__header">
+                                <header class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <span>Qlik Embed Multi</span>
+                                            <span class="badge badge-primary">Multi-objets</span>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <p class="slds-text-body_regular slds-m-bottom_small">
+                                    Affichage de plusieurs objets Qlik sur une même page. 
+                                    Parfait pour créer des tableaux de bord avec plusieurs visualisations.
+                                </p>
+                                <ul class="slds-list_dotted slds-m-left_medium">
+                                    <li>Plusieurs objets simultanés</li>
+                                    <li>Layout responsive</li>
+                                    <li>Gestion des interactions</li>
+                                </ul>
+                            </div>
+                            <div class="slds-card__footer">
+                                <a href="/apex/qlikEmbedPageMulti" class="slds-button slds-button_brand">
+                                    Accéder à la page
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Page 3: Qlik Embed Auth -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3">
+                        <div class="slds-card page-card" onclick="window.location.href='/apex/qlikEmbedPageAuth'">
+                            <div class="slds-card__header">
+                                <header class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <span>Qlik Embed Auth</span>
+                                            <span class="badge badge-warning">OAuth</span>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <p class="slds-text-body_regular slds-m-bottom_small">
+                                    Intégration avec authentification OAuth2 personnalisée. 
+                                    Permet un contrôle total sur le processus d'authentification.
+                                </p>
+                                <ul class="slds-list_dotted slds-m-left_medium">
+                                    <li>Authentification OAuth2</li>
+                                    <li>Gestion des tokens</li>
+                                    <li>Callback personnalisé</li>
+                                </ul>
+                            </div>
+                            <div class="slds-card__footer">
+                                <a href="/apex/qlikEmbedPageAuth" class="slds-button slds-button_brand">
+                                    Accéder à la page
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Page 4: Qlik Enigma.js -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3">
+                        <div class="slds-card page-card" onclick="window.location.href='/apex/qlikEmbedPageEnigma'">
+                            <div class="slds-card__header">
+                                <header class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <span>Qlik Enigma.js</span>
+                                            <span class="badge badge-success">API</span>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <p class="slds-text-body_regular slds-m-bottom_small">
+                                    Utilisation d'Enigma.js pour accéder directement à l'API Qlik Engine. 
+                                    Permet de récupérer des données brutes et de créer des visualisations personnalisées.
+                                </p>
+                                <ul class="slds-list_dotted slds-m-left_medium">
+                                    <li>Accès direct à l'API Qlik</li>
+                                    <li>Récupération de données brutes</li>
+                                    <li>Visualisations personnalisées</li>
+                                </ul>
+                            </div>
+                            <div class="slds-card__footer">
+                                <a href="/apex/qlikEmbedPageEnigma" class="slds-button slds-button_brand">
+                                    Accéder à la page
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Page 5: Qlik Enigma.js + Nebula.js -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3">
+                        <div class="slds-card page-card" onclick="window.location.href='/apex/qlikEmbedPageEnigmaNebula'">
+                            <div class="slds-card__header">
+                                <header class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <span>Qlik Enigma + Nebula.js</span>
+                                            <span class="badge badge-success">Avancé</span>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <p class="slds-text-body_regular slds-m-bottom_small">
+                                    Combinaison d'Enigma.js et Nebula.js pour créer des visualisations Qlik 
+                                    personnalisées avec le framework de visualisation officiel de Qlik.
+                                </p>
+                                <ul class="slds-list_dotted slds-m-left_medium">
+                                    <li>Enigma.js pour la connexion</li>
+                                    <li>Nebula.js pour les graphiques</li>
+                                    <li>Graphiques Qlik natifs</li>
+                                </ul>
+                            </div>
+                            <div class="slds-card__footer">
+                                <a href="/apex/qlikEmbedPageEnigmaNebula" class="slds-button slds-button_brand">
+                                    Accéder à la page
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Page 6: Qlik Enigma.js + D3.js -->
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3">
+                        <div class="slds-card page-card" onclick="window.location.href='/apex/qlikEmbedPageEnigmaD3'">
+                            <div class="slds-card__header">
+                                <header class="slds-media slds-media_center">
+                                    <div class="slds-media__body">
+                                        <h2 class="slds-card__header-title">
+                                            <span>Qlik Enigma + D3.js</span>
+                                            <span class="badge badge-success">Personnalisé</span>
+                                        </h2>
+                                    </div>
+                                </header>
+                            </div>
+                            <div class="slds-card__body slds-card__body_inner">
+                                <p class="slds-text-body_regular slds-m-bottom_small">
+                                    Utilisation d'Enigma.js pour récupérer les données et D3.js pour créer 
+                                    des graphiques entièrement personnalisés. Maximum de flexibilité.
+                                </p>
+                                <ul class="slds-list_dotted slds-m-left_medium">
+                                    <li>Enigma.js pour les données</li>
+                                    <li>D3.js pour les graphiques</li>
+                                    <li>Graphiques en barres personnalisés</li>
+                                    <li>Limite à 100 produits</li>
+                                </ul>
+                            </div>
+                            <div class="slds-card__footer">
+                                <a href="/apex/qlikEmbedPageEnigmaD3" class="slds-button slds-button_brand">
+                                    Accéder à la page
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer Information -->
+                <div class="slds-card slds-m-top_large">
+                    <div class="slds-card__header">
+                        <header class="slds-media slds-media_center">
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">
+                                    <span>Informations techniques</span>
+                                </h2>
+                            </div>
+                        </header>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">Configuration</h3>
+                                <ul class="slds-list_dotted">
+                                    <li><strong>Tenant Qlik:</strong> Configure via QlikConfig__mdt</li>
+                                    <li><strong>Web Integration ID:</strong> Configure via QlikConfig__mdt</li>
+                                    <li><strong>App ID:</strong> Configure via QlikConfig__mdt</li>
+                                </ul>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                                <h3 class="slds-text-heading_small slds-m-bottom_small">Bibliothèques utilisées</h3>
+                                <ul class="slds-list_dotted">
+                                    <li>@qlik/embed-web-components</li>
+                                    <li>enigma.js</li>
+                                    <li>@nebula.js/stardust</li>
+                                    <li>@nebula.js/sn-bar-chart</li>
+                                    <li>D3.js v7</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </body>
+
+    </html>
+</apex:page>
+

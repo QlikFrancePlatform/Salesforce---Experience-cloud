@@ -1,0 +1,11 @@
+<template>
+    <!-- Qlik Embed Web Component -->
+    <div class="qlik-container">
+        <!-- Qlik embed element will be created here by JavaScript -->
+        <div class="status-message" if:true={showStatus}>
+            <div class={statusClass}>
+                {statusMessage}
+            </div>
+        </div>
+    </div>
+</template>
