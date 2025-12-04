@@ -56,8 +56,8 @@ Make sure the following domains are allowed in your org's **Trusted Sites**:
 
 1. Go to **Setup** → **CSP Trusted Sites**
 2. Add the following sites:
-   - **https://qfp.eu.qlikcloud.com** (or your Qlik tenant)
-   - **wss://qfp.eu.qlikcloud.com** (for WebSockets)
+   - **https://<tenant>.eu.qlikcloud.com** (or your Qlik tenant)
+   - **wss://<tenant>.eu.qlikcloud.com** (for WebSockets)
    - **https://cdn.jsdelivr.net** (for enigma.js)
 
 ## 📝 Important Notes

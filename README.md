@@ -156,7 +156,7 @@ Composant avancé utilisant Enigma.js pour intégration Qlik Cloud avec support 
 ```html
 <!-- Dans Experience Builder -->
 <c:qlikEmbedEnigma
-    tenant="veg-eu.eu.qlikcloud.com"
+    tenant="<tenant>.eu.qlikcloud.com"
     app-id="your-app-id"
     object-ids="htaMkv,YGN"
     auth-type="oauth2"

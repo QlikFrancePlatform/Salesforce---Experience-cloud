@@ -56,8 +56,8 @@ Assurez-vous que les domaines suivants sont autorisés dans les **Trusted Sites*
 
 1. Allez dans **Setup** → **CSP Trusted Sites**
 2. Ajoutez les sites suivants :
-   - **https://qfp.eu.qlikcloud.com** (ou votre tenant Qlik)
-   - **wss://qfp.eu.qlikcloud.com** (pour les WebSockets)
+   - **https://<tenant>.eu.qlikcloud.com** (ou votre tenant Qlik)
+   - **wss://<tenant>.eu.qlikcloud.com** (pour les WebSockets)
    - **https://cdn.jsdelivr.net** (pour enigma.js)
 
 ## 📝 Notes importantes

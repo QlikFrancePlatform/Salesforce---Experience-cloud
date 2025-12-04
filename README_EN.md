@@ -140,7 +140,7 @@ Advanced component using Enigma.js for Qlik Cloud integration with Auth0 SSO sup
 ```html
 <!-- In Experience Builder -->
 <c:qlikEmbedEnigma
-    tenant="veg-eu.eu.qlikcloud.com"
+    tenant="<tenant>.eu.qlikcloud.com"
     app-id="your-app-id"
     object-ids="htaMkv,YGN"
     auth-type="oauth2"
